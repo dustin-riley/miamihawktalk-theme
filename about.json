@@ -1,0 +1,33 @@
+{
+  "name": "MiamiHawkTalk",
+  "about_url": "https://miamihawktalk.fans",
+  "license_url": "https://github.com/OWNER/miamihawktalk-theme/blob/main/LICENSE",
+  "authors": "MiamiHawkTalk",
+  "component": false,
+  "color_schemes": {
+    "MiamiHawkTalk Light": {
+      "primary": "1A1A1A",
+      "secondary": "FFFFFF",
+      "tertiary": "A6192E",
+      "quaternary": "A6192E",
+      "header_background": "FFFFFF",
+      "header_primary": "1A1A1A",
+      "highlight": "FCE8EB",
+      "danger": "A6192E",
+      "success": "1E7A46",
+      "love": "A6192E"
+    },
+    "MiamiHawkTalk Dark": {
+      "primary": "EDEDED",
+      "secondary": "17191C",
+      "tertiary": "E23A4E",
+      "quaternary": "E23A4E",
+      "header_background": "202329",
+      "header_primary": "EDEDED",
+      "highlight": "3A2226",
+      "danger": "E23A4E",
+      "success": "3DB06E",
+      "love": "E23A4E"
+    }
+  }
+}
