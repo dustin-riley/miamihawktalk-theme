@@ -1,0 +1,12 @@
+// Larger wordmark on desktop; the SVG already includes the tagline line.
+.d-header .title a::before {
+  width: 250px;
+  height: 42px;
+}
+
+// Active navigation item gets an accent underline
+.nav-pills > li > a.active,
+.list-controls .nav-pills > li > a.active {
+  box-shadow: inset 0 -3px 0 $tertiary;
+  color: $tertiary;
+}

@@ -1,0 +1,6 @@
+// Replace the wordmark with the square monogram on mobile.
+.d-header .title a::before {
+  width: 34px;
+  height: 34px;
+  background-image: url($monogram);
+}
