@@ -4,9 +4,21 @@
   height: 42px;
 }
 
-// Active navigation item gets an accent underline
+// Active navigation item gets a clean, straight accent underline.
+// A pseudo-element bar is used instead of an inset box-shadow so the
+// underline stays flat and does not curve to follow the tab's rounded corners.
 .nav-pills > li > a.active,
 .list-controls .nav-pills > li > a.active {
-  box-shadow: inset 0 -3px 0 $tertiary;
-  color: $tertiary;
+  position: relative;
+  box-shadow: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0.5em;
+    right: 0.5em;
+    bottom: 0;
+    height: 3px;
+    background: $tertiary;
+  }
 }
