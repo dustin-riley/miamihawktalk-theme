@@ -81,3 +81,17 @@ a,
 .cooked {
   color: $primary;
 }
+
+// Topic progress timeline — intentional accent instead of washed-out pink.
+// Discourse tints the handle with a lightened tertiary (--tertiary-400) and the
+// track line with $tertiary-low; when the accent is red both render as pink.
+// Use a solid brand-red handle (the draggable "you are here" marker) on a quiet
+// neutral track, keeping red reserved for the interactive element.
+.topic-timeline {
+  --topic-timeline-handle-color: #{$tertiary};
+  --topic-timeline-border-color: #{$primary-low};
+
+  .timeline-scrollarea {
+    border-color: $primary-low;
+  }
+}
