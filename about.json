@@ -6,7 +6,6 @@
   "component": false,
   "assets": {
     "wordmark": "assets/wordmark.svg",
-    "wordmark_dark": "assets/wordmark-dark.svg",
     "monogram": "assets/monogram.svg"
   },
   "color_schemes": {

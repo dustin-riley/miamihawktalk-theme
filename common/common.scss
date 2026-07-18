@@ -35,20 +35,25 @@ h1, h2, h3, h4, h5, .title {
   align-items: center;
 }
 
-// An SVG used as a background-image is an isolated document: `currentColor`
-// cannot reach it, so the wordmark's baked text color is fixed. We therefore
-// ship a light-header and a dark-header variant and let Discourse pick per
-// color scheme (theme SCSS is compiled once per scheme, so this resolves
-// correctly whether the user is on the light or dark scheme).
+// An SVG used as a background-image is an isolated document, so its text color
+// can't follow the theme (invisible on the dark header). Instead we use the
+// wordmark as a mask and paint it with var(--header_primary) — a custom
+// property the browser resolves at runtime against the active color scheme, so
+// the wordmark is dark on the light header and light on the dark header.
+// (Masking is single-color, hence the wordmark reads as one clean color.)
 .d-header .title a::before {
   content: "";
   display: inline-block;
   width: 210px;
   height: 34px;
-  background-image: dark-light-choose(url($wordmark), url($wordmark_dark));
+  background-color: var(--header_primary);
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
+  -webkit-mask: url($wordmark) no-repeat left center;
+  mask: url($wordmark) no-repeat left center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 // ---- Thin red identity hairline under the header ----
