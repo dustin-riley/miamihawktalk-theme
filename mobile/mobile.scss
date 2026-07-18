@@ -1,6 +1,7 @@
 // Replace the wordmark with the square monogram on mobile. The monogram is a
 // full-color badge (red field, white MHT), so clear the wordmark mask and the
-// mask-paint color and render it as a normal background image.
+// mask-paint color and render it as a normal background image. The red "Hawk"
+// overlay (::after) is not used with the monogram, so hide it.
 .d-header .title a::before {
   width: 34px;
   height: 34px;
@@ -8,4 +9,8 @@
   mask: none;
   background-color: transparent;
   background-image: url($monogram);
+}
+
+.d-header .title a::after {
+  display: none;
 }

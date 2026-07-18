@@ -1,5 +1,7 @@
 // Larger wordmark on desktop; the SVG already includes the tagline line.
-.d-header .title a::before {
+// Size both mask layers (base + red "Hawk" overlay) identically so they align.
+.d-header .title a::before,
+.d-header .title a::after {
   width: 250px;
   height: 42px;
 }

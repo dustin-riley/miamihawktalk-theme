@@ -36,24 +36,49 @@ h1, h2, h3, h4, h5, .title {
 }
 
 // An SVG used as a background-image is an isolated document, so its text color
-// can't follow the theme (invisible on the dark header). Instead we use the
-// wordmark as a mask and paint it with var(--header_primary) — a custom
-// property the browser resolves at runtime against the active color scheme, so
-// the wordmark is dark on the light header and light on the dark header.
-// (Masking is single-color, hence the wordmark reads as one clean color.)
-.d-header .title a::before {
+// can't follow the theme (invisible on the dark header). Instead we paint the
+// wordmark with CSS masks, whose colors come from custom properties the browser
+// resolves at runtime against the active scheme:
+//   ::before  full wordmark, painted var(--header_primary)  (dark on light
+//             header, light on dark header)
+//   ::after   just the "Hawk", painted var(--tertiary)      (the red accent)
+// Both masks share the wordmark's viewBox and text metrics, so "Hawk" in the
+// overlay lands exactly on "Hawk" in the base.
+.d-header .title a {
+  position: relative;
+  padding: 0;
+}
+
+.d-header .title a::before,
+.d-header .title a::after {
   content: "";
   display: inline-block;
   width: 210px;
   height: 34px;
-  background-color: var(--header_primary);
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
-  -webkit-mask: url($wordmark) no-repeat left center;
-  mask: url($wordmark) no-repeat left center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
   -webkit-mask-size: contain;
   mask-size: contain;
+}
+
+.d-header .title a::before {
+  background-color: var(--header_primary);
+  -webkit-mask-image: url($wordmark);
+  mask-image: url($wordmark);
+}
+
+.d-header .title a::after {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: var(--tertiary);
+  -webkit-mask-image: url($wordmark_hawk);
+  mask-image: url($wordmark_hawk);
 }
 
 // ---- Thin red identity hairline under the header ----
@@ -67,18 +92,12 @@ a,
   color: $tertiary;
 }
 
-// Header icon buttons (chat, notifications, etc.): give hover a subtle,
-// scheme-correct background and keep the glyph the accent color, so the icon
-// never washes into a light hover box in dark mode.
-.d-header .icon:hover,
-.d-header .btn-flat:hover,
-.d-header button:not(.btn-primary):hover {
-  background: var(--primary-low);
-
-  .d-icon,
-  &.icon {
-    color: $tertiary;
-  }
+// Header icon buttons (chat, notifications, etc.): Discourse sets their hover
+// background from --d-header-icon-background--hover (which resolves to --d-hover,
+// and renders light on our dark scheme, washing out the light icon). Point it at
+// --primary-low so the hover box is subtle and scheme-correct in both modes.
+.d-header {
+  --d-header-icon-background--hover: var(--primary-low);
 }
 
 .btn-primary {
