@@ -35,16 +35,20 @@ h1, h2, h3, h4, h5, .title {
   align-items: center;
 }
 
+// An SVG used as a background-image is an isolated document: `currentColor`
+// cannot reach it, so the wordmark's baked text color is fixed. We therefore
+// ship a light-header and a dark-header variant and let Discourse pick per
+// color scheme (theme SCSS is compiled once per scheme, so this resolves
+// correctly whether the user is on the light or dark scheme).
 .d-header .title a::before {
   content: "";
   display: inline-block;
   width: 210px;
   height: 34px;
-  background-image: url($wordmark);
+  background-image: dark-light-choose(url($wordmark), url($wordmark_dark));
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
-  color: var(--header_primary); // feeds currentColor in the SVG text
 }
 
 // ---- Thin red identity hairline under the header ----
@@ -54,9 +58,22 @@ h1, h2, h3, h4, h5, .title {
 
 // ---- Accent discipline: interactive elements only ----
 a,
-.d-header .icon:hover,
 .topic-list .link-top-line a.title:hover {
   color: $tertiary;
+}
+
+// Header icon buttons (chat, notifications, etc.): give hover a subtle,
+// scheme-correct background and keep the glyph the accent color, so the icon
+// never washes into a light hover box in dark mode.
+.d-header .icon:hover,
+.d-header .btn-flat:hover,
+.d-header button:not(.btn-primary):hover {
+  background: var(--primary-low);
+
+  .d-icon,
+  &.icon {
+    color: $tertiary;
+  }
 }
 
 .btn-primary {
@@ -94,4 +111,12 @@ a,
   .timeline-scrollarea {
     border-color: $primary-low;
   }
+}
+
+// Read/visited topic titles are dimmed to --primary-medium, which is very
+// low-contrast on the dark canvas. Lift them toward --primary-high so already-
+// read threads stay comfortably legible.
+.topic-list-item.visited a.title:not(.badge-notification),
+.latest-topic-list-item.visited a.title {
+  color: var(--primary-high);
 }

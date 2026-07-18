@@ -6,6 +6,7 @@
   "component": false,
   "assets": {
     "wordmark": "assets/wordmark.svg",
+    "wordmark_dark": "assets/wordmark-dark.svg",
     "monogram": "assets/monogram.svg"
   },
   "color_schemes": {
@@ -24,14 +25,14 @@
     "MiamiHawkTalk Dark": {
       "primary": "EDEDED",
       "secondary": "17191C",
-      "tertiary": "E23A4E",
-      "quaternary": "E23A4E",
+      "tertiary": "E5403A",
+      "quaternary": "E5403A",
       "header_background": "202329",
       "header_primary": "EDEDED",
       "highlight": "3A2226",
-      "danger": "E23A4E",
+      "danger": "E5403A",
       "success": "3DB06E",
-      "love": "E23A4E"
+      "love": "E5403A"
     }
   }
 }
