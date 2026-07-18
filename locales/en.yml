@@ -1,0 +1,7 @@
+en:
+  theme_metadata:
+    description: "Clean, refined RedHawks-branded theme for MiamiHawkTalk."
+    settings:
+      show_tagline: "Show the 'Love and Honor' tagline under the header wordmark on desktop."
+      accent_color_light: "Accent color used in the light scheme (hex, e.g. #A6192E)."
+      accent_color_dark: "Accent color used in the dark scheme (hex, e.g. #E23A4E)."

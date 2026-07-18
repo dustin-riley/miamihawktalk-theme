@@ -1,0 +1,9 @@
+show_tagline:
+  type: bool
+  default: true
+accent_color_light:
+  type: string
+  default: "#A6192E"
+accent_color_dark:
+  type: string
+  default: "#E23A4E"

@@ -4,6 +4,10 @@
   "license_url": "https://github.com/OWNER/miamihawktalk-theme/blob/main/LICENSE",
   "authors": "MiamiHawkTalk",
   "component": false,
+  "assets": {
+    "wordmark": "assets/wordmark.svg",
+    "monogram": "assets/monogram.svg"
+  },
   "color_schemes": {
     "MiamiHawkTalk Light": {
       "primary": "1A1A1A",
