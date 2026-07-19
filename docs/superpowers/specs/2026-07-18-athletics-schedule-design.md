@@ -173,6 +173,8 @@ automatically and must not redefine the palette.
 
 A Glimmer component rendered into a sidebar plugin outlet.
 
+Target Discourse version: **2026.7.0-latest** (self-hosted).
+
 **Open item for the first implementation step:** Discourse's `addSidebarSection`
 API is organised around link rows and will not produce the two-line, logo-
 bearing layout below. The rich layout needs a plugin outlet
