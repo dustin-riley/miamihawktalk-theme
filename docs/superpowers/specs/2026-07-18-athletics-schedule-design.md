@@ -32,11 +32,28 @@ Each item is well structured:
 Observed characteristics of the snapshot, which the parser must not assume hold
 forever:
 
-- No `TBA`/`TBD` times and no midnight-placeholder start times.
+- **59% of events have no announced time.** The feed expresses this by omitting
+  the time from the timestamp rather than by writing `TBA`:
+
+  ```
+  timed:     <ev:startdate>2026-08-16T23:00:00.0000000Z</ev:startdate>
+  time unset: <ev:startdate>2026-08-29</ev:startdate>
+  ```
+
+  83 of 141 items are date-only: Hockey 40, Men's Golf 33, Football 6, Women's
+  Soccer 3, Women's Volleyball 1. The signal is unambiguous — a date-only
+  timestamp always coincides with no time in the `<title>`, and a timed
+  timestamp always coincides with one. These are real events whose times are set
+  closer to the season.
+- Fractional seconds are not always zero: `2026-08-28T00:00:00.0000001Z` occurs.
+  Parse by stripping the fraction, not by matching `.0000000`.
 - 66 of 141 titles use ` at ` (away); the rest use ` vs `.
 - Multi-day events appear as repeated items sharing a title: `Men's Golf vs MAC
   Championship- Talis Park` appears 3 times, `Hockey vs NCHC First Round
   (Best-of-3)` 3 times.
+- `s:opponent` is cleaner than the title remainder — for the volleyball
+  exhibition the title yields `Xavier- Exhibition` while `s:opponent` is
+  `Xavier`, with `Exhibition` carried separately in `s:gamepromoname`.
 
 ## Decisions
 
@@ -48,7 +65,8 @@ forever:
 | Packaging | Plugin for data, theme component for UI |
 | Row design | Opponent logo + vs/at + opponent, sport and date beneath |
 | Multi-day events | Collapsed into one row with a date range |
-| Timezone | Visitor's local timezone |
+| Timezone | Visitor's local timezone, for timed events only |
+| Events with no announced time | Render the date plus `TBA`; never timezone-convert |
 
 ### Why a plugin rather than a browser fetch
 
@@ -108,7 +126,11 @@ Per item:
 - **homeAway** — `at` in the title means away, `vs` means home. Neutral-site
   games are published as `vs` and are not distinguishable from true home games;
   they are treated as home.
-- **startUtc / endUtc** — `ev:startdate` / `ev:enddate`, ISO 8601 UTC.
+- **startUtc / endUtc** — `ev:startdate` / `ev:enddate`, ISO 8601 UTC. Strip
+  fractional seconds before parsing.
+- **timeKnown** — false when `ev:startdate` is date-only (no `T`), true
+  otherwise. Consumers must branch on this rather than inferring from the time
+  value, since a date-only event has no meaningful time-of-day at all.
 - **location** — `ev:location`.
 - **opponentLogo** — `s:opponentlogo`.
 - **url** — `link`.
@@ -118,12 +140,20 @@ Then, in order:
 
 1. Drop events whose `startUtc` is in the past.
 2. Sort ascending by `startUtc`.
-3. Collapse runs of same-sport, same-title events into one entry whose
-   `startUtc` is the first item's and whose `endUtc` is the last item's.
+3. Collapse runs of same-sport, same-opponent events into one entry whose
+   `startUtc` is the first item's and whose `endUtc` is the last item's —
+   **but only when consecutive events start within 48 hours of each other.**
+   The window is required: without it, the November and February home series
+   against the same hockey opponent would merge into one nonsensical
+   five-month row.
 
-Times that arrive as `TBA`/`TBD` or with a midnight placeholder are absent from
-the current feed but must not raise; they are emitted with a null time and
-rendered as `TBA`.
+   Verified against the 2026-07-18 snapshot: this reduces 141 items to 113
+   rows across 24 collapsed groups, correctly merging the three-day golf
+   tournaments and `NCHC First Round (Best-of-3)` while keeping separate
+   series distinct.
+
+Timestamps that arrive as literal `TBA`/`TBD` strings do not occur in the
+current snapshot but must not raise; they are treated the same as date-only.
 
 ### Job (`app/jobs/scheduled/fetch_redhawks_schedule.rb`)
 
@@ -199,6 +229,11 @@ requires checking back before proceeding.
   do not wrap at sidebar width (~200px).
 - Times rendered in the visitor's local timezone with `Intl.DateTimeFormat`, no
   timezone label, since it is the reader's own clock.
+- **Events with `timeKnown: false` render as `Aug 30, TBA`** and are formatted
+  from the feed's calendar date directly, with no timezone conversion. Applying
+  conversion to a presumed midnight would display `2026-08-29` as Aug 28 for
+  every viewer in the US. This path covers the majority of hockey and football
+  rows for most of the year, so it is a primary case, not an edge case.
 - Collapsed multi-day events show a range: `Apr 27-29`.
 - The whole row links to the event's `calendar.aspx` page, new tab.
 - Footer link **See full schedule ->** to `https://miamiredhawks.com/calendar.aspx`.
@@ -228,8 +263,10 @@ Per this project's rule that only the running site confirms rendering:
 
 - `bundle exec rspec` against the parser, using the 2026-07-18 snapshot as a
   fixture. Covers: sport extraction across all title shapes, vs/at home/away,
-  multi-day collapsing (the 3-item golf and hockey cases specifically),
-  past-event filtering, and malformed/TBA input not raising.
+  date-only vs timed detection (83/58 split in the fixture), fractional-second
+  timestamps, multi-day collapsing within the 48-hour window (the 3-item golf
+  and hockey cases, and the non-merging of separate same-opponent series),
+  past-event filtering, and malformed input not raising.
 - `python3 -m json.tool about.json`, `ruby -ryaml -e "YAML.load_file(...)"` on
   locales, per the existing repo checks.
 
@@ -239,6 +276,8 @@ Per this project's rule that only the running site confirms rendering:
 - Desktop and mobile.
 - Logged out, to confirm the anonymous path works.
 - A row with a deliberately broken logo URL to confirm the fallback.
+- Both a timed row and a `TBA` row visible together, confirming the TBA date
+  matches the athletics site's published date exactly.
 - Empty state, by pointing the feed setting at a stub that yields no events.
 
 ## Out of scope
