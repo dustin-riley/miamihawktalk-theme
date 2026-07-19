@@ -84,10 +84,12 @@ All artwork in `assets/` is **original**. Miami University's actual trademarks
 
 ## Project docs
 
-- `docs/ROADMAP.md` — feature backlog and phasing. Phase 1 (branded theme) is
-  complete; Phase 2 (custom homepage, Glimmer components) and Phase 3 (features
-  needing live sports data) are planned. **Phase 1 is deliberately near-zero
-  JavaScript** — no `.gjs`, no `api.renderInOutlet` — which is why it is robust
-  across Discourse upgrades. Adding JS moves work into Phase 2 scope.
-- `docs/superpowers/specs/` and `docs/superpowers/plans/` — the Phase 1 design
-  spec and implementation plan.
+- `docs/superpowers/` — this repo's design spec and implementation plan.
+  Athletics schedule documents live in the plugin repo, not here.
+- **Planned work lives in `../BACKLOG.md`**, one level up, shared across all
+  three MiamiHawkTalk repos. Todos do not belong in this file.
+
+**Phase 1 is deliberately near-zero JavaScript** — no `.gjs`, no
+`api.renderInOutlet` — which is why it is robust across Discourse upgrades.
+Adding JS to this repo moves work into Phase 2 scope; the schedule sidebar
+deliberately lives in a separate component repo for exactly that reason.
