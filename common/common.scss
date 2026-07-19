@@ -130,10 +130,21 @@ a,
   }
 }
 
-// Unread/new notification badges lean on the accent
-.badge-notification.unread-notifications,
-.badge-notification.new-topic {
+// Unread/new notification badges lean on the accent.
+//
+// Only .unread-notifications is a filled bubble. Discourse renders .new-topic /
+// .new-replies as a *transparent* box whose visible dot is an 8px ::before
+// pseudo-element, so backgrounding the parent paints the whole box red and
+// leaves the real dot as a lighter ring inside it. Colour the pseudo-element.
+.badge-notification.unread-notifications {
   background-color: var(--tertiary);
+}
+
+// Discourse tints the dot with --tertiary-med-or-tertiary; a lightened red
+// reads pink, so use the solid accent (same reasoning as the timeline handle).
+.badge-notification.new-topic::before,
+.badge-notification.new-replies::before {
+  background: var(--tertiary);
 }
 
 // NOTE: do not set post text color here. Discourse already colors .cooked /
