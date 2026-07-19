@@ -190,10 +190,26 @@ The parser is a plain Ruby class with no Rails, HTTP, or persistence dependencie
 
 - [ ] **Step 1: Install test dependencies and add the fixture**
 
+Already done on this machine — verified 2026-07-18. `nokogiri` 1.13.8 was
+present; `rspec` 3.13.6 was installed user-scoped because macOS system Ruby's
+gem directory is not writable:
+
 ```bash
-gem install nokogiri rspec
+gem install --user-install rspec          # already run
 cp /Users/dustin/Downloads/calendar.rss /Users/dustin/Development/discourse-redhawks-schedule/spec/fixtures/calendar.rss
 ```
+
+**The `rspec` binary is not on `PATH`.** Every test command in this plan must
+be run as:
+
+```bash
+~/.gem/ruby/2.6.0/bin/rspec spec/lib/parser_spec.rb
+```
+
+The target Ruby is **2.6.10** (system Ruby, no rbenv/rvm/asdf present). Avoid
+`filter_map` (2.7+), `Hash#except` (3.0+), endless method definitions (3.0+),
+and rightward assignment. The parser in Step 3 is already written to this
+constraint.
 
 The fixture is the 2026-07-18 snapshot: 141 items, 83 date-only and 58 timed, 5 sports (Hockey 40, Men's Golf 33, Women's Volleyball 32, Women's Soccer 23, Football 13). Basketball is absent because those schedules were not published yet — which is exactly why the sport-label map in Task 10 needs a fallback.
 
@@ -352,7 +368,7 @@ end
 - [ ] **Step 2b: Run the test to verify it fails**
 
 ```bash
-cd /Users/dustin/Development/discourse-redhawks-schedule && rspec spec/lib/parser_spec.rb
+cd /Users/dustin/Development/discourse-redhawks-schedule && ~/.gem/ruby/2.6.0/bin/rspec spec/lib/parser_spec.rb
 ```
 
 Expected: FAIL — `cannot load such file -- .../lib/redhawks_schedule/parser`
@@ -397,7 +413,10 @@ module RedhawksSchedule
     end
 
     def parse
-      events = document.xpath("//channel/item").filter_map { |item| build_event(item) }
+      # `.map.compact` rather than `filter_map`: the dev Mac runs system Ruby
+      # 2.6, where filter_map does not exist. Discourse's container runs 3.x,
+      # so this would otherwise fail only locally.
+      events = document.xpath("//channel/item").map { |item| build_event(item) }.compact
       collapse(upcoming(events).sort_by { |e| [e[:start_utc], e[:sport]] })
     end
 
@@ -501,7 +520,7 @@ end
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-cd /Users/dustin/Development/discourse-redhawks-schedule && rspec spec/lib/parser_spec.rb
+cd /Users/dustin/Development/discourse-redhawks-schedule && ~/.gem/ruby/2.6.0/bin/rspec spec/lib/parser_spec.rb
 ```
 
 Expected: PASS, all examples green.
@@ -676,7 +695,7 @@ Append to `spec/lib/parser_spec.rb`, inside the top-level `describe`:
 - [ ] **Step 2: Run the tests**
 
 ```bash
-cd /Users/dustin/Development/discourse-redhawks-schedule && rspec spec/lib/parser_spec.rb
+cd /Users/dustin/Development/discourse-redhawks-schedule && ~/.gem/ruby/2.6.0/bin/rspec spec/lib/parser_spec.rb
 ```
 
 Expected: PASS. These numbers (101 rows, 36 collapsed groups, 141 total days) were computed by simulating this exact algorithm against the real snapshot, so a failure means the collapsing logic drifted, not that the expectations are wrong.
@@ -782,7 +801,7 @@ Append inside the top-level `describe`:
 - [ ] **Step 2: Run the tests**
 
 ```bash
-cd /Users/dustin/Development/discourse-redhawks-schedule && rspec spec/lib/parser_spec.rb
+cd /Users/dustin/Development/discourse-redhawks-schedule && ~/.gem/ruby/2.6.0/bin/rspec spec/lib/parser_spec.rb
 ```
 
 Expected: PASS without implementation changes — `filter_map`, the `parse_time` rescue, and Nokogiri's lenient XML mode already cover these. If any example fails, fix `parser.rb` minimally and rerun; do not weaken the test.
