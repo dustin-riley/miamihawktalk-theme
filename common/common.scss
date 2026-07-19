@@ -83,13 +83,13 @@ h1, h2, h3, h4, h5, .title {
 
 // ---- Thin red identity hairline under the header ----
 .d-header {
-  border-top: 3px solid $tertiary;
+  border-top: 3px solid var(--tertiary);
 }
 
 // ---- Accent discipline: interactive elements only ----
 a,
 .topic-list .link-top-line a.title:hover {
-  color: $tertiary;
+  color: var(--tertiary);
 }
 
 // Discourse's hover background is a hardcoded light gray ($hover: #f2f2f2,
@@ -105,8 +105,8 @@ a,
 // --secondary, which is near-white in the light scheme but dark in the dark
 // scheme (dark text on the red button). White reads well on both accent reds.
 .btn-primary {
-  background: $tertiary;
-  border-color: $tertiary;
+  background: var(--tertiary);
+  border-color: var(--tertiary);
   color: #fff;
 
   .d-icon {
@@ -115,8 +115,8 @@ a,
 
   &:hover,
   &:focus {
-    background: darken($tertiary, 6%);
-    border-color: darken($tertiary, 6%);
+    background: var(--tertiary-hover);
+    border-color: var(--tertiary-hover);
     color: #fff;
 
     .d-icon {
@@ -128,14 +128,13 @@ a,
 // Unread/new notification badges lean on the accent
 .badge-notification.unread-notifications,
 .badge-notification.new-topic {
-  background-color: $tertiary;
+  background-color: var(--tertiary);
 }
 
-// Keep content canvas neutral (no red flooding)
-.topic-body,
-.cooked {
-  color: $primary;
-}
+// NOTE: do not set post text color here. Discourse already colors .cooked /
+// .topic-body correctly per scheme, and setting it from the SCSS $primary
+// variable baked in the light scheme's near-black, making post text invisible
+// on the dark canvas.
 
 // Topic progress timeline — intentional accent instead of washed-out pink.
 // Discourse tints the handle with a lightened tertiary (--tertiary-400) and the
@@ -143,11 +142,11 @@ a,
 // Use a solid brand-red handle (the draggable "you are here" marker) on a quiet
 // neutral track, keeping red reserved for the interactive element.
 .topic-timeline {
-  --topic-timeline-handle-color: #{$tertiary};
-  --topic-timeline-border-color: #{$primary-low};
+  --topic-timeline-handle-color: var(--tertiary);
+  --topic-timeline-border-color: var(--primary-low);
 
   .timeline-scrollarea {
-    border-color: $primary-low;
+    border-color: var(--primary-low);
   }
 }
 

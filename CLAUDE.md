@@ -73,17 +73,33 @@ rsvg-convert -w 512 -h 512 assets/monogram.svg -o assets/favicon.png
 
 **Color schemes drive everything.** `about.json` defines two schemes
 (`MiamiHawkTalk Light`, `MiamiHawkTalk Dark`). Discourse exposes each scheme's
-colors to theme SCSS as variables (`$primary` = text, `$secondary` = background,
-`$tertiary` = accent, `$header_primary`, `$primary-low/-high`, …) **and** as CSS
-custom properties (`var(--tertiary)`, `var(--primary-low)`, …). Theme SCSS is
-compiled once per scheme, so SCSS variables are concrete colors (`darken()` works
-on them).
+colors both as SCSS variables (`$primary`, `$tertiary`, `$primary-low`, …) and as
+CSS custom properties (`var(--primary)`, `var(--tertiary)`, `var(--primary-low)`, …).
 
-**SCSS vs. CSS custom property is a real design decision:**
-- SCSS `$tertiary` is baked at compile time per scheme.
-- `var(--tertiary)` is resolved by the browser at runtime against the *active*
-  scheme. **Use the custom property whenever a value must adapt to whichever
-  scheme the user selected** — this is the reliable mechanism.
+> ### ⚠️ Never use SCSS color variables. Always use CSS custom properties.
+>
+> This is the single most important rule in this repo. **SCSS color variables
+> bake in the *light* scheme's values and never adapt to the active scheme.**
+> The theme stylesheet is not recompiled per scheme, so `color: $primary`
+> emits the light scheme's near-black — which rendered post text invisible on
+> the dark canvas until it was fixed. Same trap for `$tertiary` (links became
+> dark crimson on charcoal) and `$primary-low`.
+>
+> Write `color: var(--primary)`, `background: var(--tertiary)`,
+> `border-color: var(--primary-low)`. The browser resolves these at runtime
+> against whichever scheme the user selected.
+>
+> Corollary: SCSS color functions can't be used, since they need a real color.
+> Instead of `darken($tertiary, 6%)`, use Discourse's precomputed
+> `var(--tertiary-hover)`. Discourse ships hover/lightened variants for most
+> palette colors — look for one rather than computing it.
+>
+> The `$` variables that *are* safe are the non-color asset ones injected from
+> `about.json` (`$wordmark`, `$wordmark_hawk`, `$monogram`).
+>
+> **Symptom to watch for:** an element is correct in light mode and wrong in
+> dark mode, while Discourse's own adjacent elements are fine. That is almost
+> always a baked SCSS color variable.
 
 **Assets** declared in `about.json`'s `assets` block become SCSS variables of the
 same name (`wordmark` → `$wordmark`), used as `url($wordmark)`.
