@@ -912,9 +912,17 @@ class RedhawksScheduleController < ::ApplicationController
   skip_before_action :check_xhr, :preload_json, :redirect_to_login_if_required, raise: false
 
   def index
+    # A database hiccup must degrade to an absent sidebar, not a 500. This is
+    # the only remaining path that could render a broken section rather than
+    # no section at all.
     payload =
-      PluginStore.get(::RedhawksSchedule::PLUGIN_NAME, ::RedhawksSchedule::STORE_KEY) ||
-        { "generated_at" => nil, "events" => [] }
+      begin
+        PluginStore.get(::RedhawksSchedule::PLUGIN_NAME, ::RedhawksSchedule::STORE_KEY)
+      rescue StandardError => e
+        Rails.logger.warn("[redhawks-schedule] store read failed: #{e.class}: #{e.message}")
+        nil
+      end
+    payload ||= { "generated_at" => nil, "events" => [] }
 
     response.headers["Cache-Control"] = "public, max-age=900"
     render json: payload
@@ -1053,14 +1061,21 @@ enabled_on_mobile:
 
 ```yaml
 en:
-  js:
-    redhawks_schedule:
-      title: "Upcoming Games"
-      full_schedule: "See full schedule"
-      tba: "TBA"
-      home_prefix: "vs"
-      away_prefix: "at"
+  theme_metadata:
+    description: "Shows upcoming Miami University Athletics events in the sidebar."
+  title: "Upcoming Games"
+  full_schedule: "See full schedule"
+  tba: "TBA"
+  home_prefix: "vs"
+  away_prefix: "at"
 ```
+
+**Theme components namespace translations differently from plugins.** Keys go
+directly under `en:` with no `js:` level, and Discourse stores them as
+`theme_translation.<theme_id>.<key>`. They resolve only through the
+`themePrefix` helper — a bare `i18n("title")` renders the literal
+`[en.title]` placeholder. Verified against Discourse's own Horizon theme and
+`docs/developer-guides/docs/05-themes-components/14-localizable-strings.md`.
 
 - [ ] **Step 5: Write `.gitignore`**
 
@@ -1171,6 +1186,7 @@ export async function fetchSchedule() {
 
 ```js
 import { i18n } from "discourse-i18n";
+import { themePrefix } from "virtual:theme";
 
 // Sidebar rows are roughly 200px wide, so long sport names must be shortened
 // or they wrap. This map is not exhaustive on purpose: the July feed contains
@@ -1196,8 +1212,8 @@ export function sportLabel(sport) {
 
 export function prefixFor(event) {
   return event.home_away === "away"
-    ? i18n("redhawks_schedule.away_prefix")
-    : i18n("redhawks_schedule.home_prefix");
+    ? i18n(themePrefix("away_prefix"))
+    : i18n(themePrefix("home_prefix"));
 }
 
 // Formats the calendar date carried in an ISO string WITHOUT converting it.
@@ -1230,7 +1246,7 @@ export function formatWhen(event) {
     if (multiDay) {
       return `${start}–${calendarDate(event.end_utc)}`;
     }
-    return `${start}, ${i18n("redhawks_schedule.tba")}`;
+    return `${start}, ${i18n(themePrefix("tba"))}`;
   }
 
   const start = new Date(event.start_utc);
@@ -1268,6 +1284,7 @@ git add javascripts && git commit -m "feat: schedule fetching, caching and row f
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { i18n } from "discourse-i18n";
+import { themePrefix } from "virtual:theme";
 import { fetchSchedule } from "../lib/schedule-data";
 import { formatWhen, prefixFor, sportLabel } from "../lib/format-event";
 
@@ -1308,7 +1325,7 @@ export default class UpcomingGames extends Component {
   <template>
     {{#if this.hasEvents}}
       <div class="mht-schedule">
-        <h3 class="mht-schedule__title">{{i18n "redhawks_schedule.title"}}</h3>
+        <h3 class="mht-schedule__title">{{i18n (themePrefix "title")}}</h3>
 
         <ul class="mht-schedule__list">
           {{#each this.events as |event|}}
@@ -1353,7 +1370,7 @@ export default class UpcomingGames extends Component {
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{i18n "redhawks_schedule.full_schedule"}}
+          {{i18n (themePrefix "full_schedule")}}
         </a>
       </div>
     {{/if}}
