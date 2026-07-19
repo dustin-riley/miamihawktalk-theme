@@ -140,17 +140,24 @@ Then, in order:
 
 1. Drop events whose `startUtc` is in the past.
 2. Sort ascending by `startUtc`.
-3. Collapse runs of same-sport, same-opponent events into one entry whose
-   `startUtc` is the first item's and whose `endUtc` is the last item's —
-   **but only when consecutive events start within 48 hours of each other.**
-   The window is required: without it, the November and February home series
+3. Collapse same-sport, same-opponent events into one entry whose `startUtc`
+   is the first item's and whose `endUtc` is the last item's — **but only when
+   the next event begins within 48 hours of the running group's end.** The
+   window is required: without it, the November and February home series
    against the same hockey opponent would merge into one nonsensical
    five-month row.
 
-   Verified against the 2026-07-18 snapshot: this reduces 141 items to 113
-   rows across 24 collapsed groups, correctly merging the three-day golf
-   tournaments and `NCHC First Round (Best-of-3)` while keeping separate
-   series distinct.
+   Each event must be matched against the most recent open group **for its own
+   sport and opponent**, not merely against the previous row in the sorted
+   list. Events from other sports routinely fall between two days of the same
+   tournament, and a previous-row-only comparison silently leaves 13
+   tournaments and series uncollapsed.
+
+   Verified by simulating the algorithm against the 2026-07-18 snapshot: 141
+   items reduce to 101 rows across 36 collapsed groups, with every original
+   item still accounted for, no two rows for the same matchup inside the
+   window, and the three-day golf tournaments and `NCHC First Round
+   (Best-of-3)` merged while separate series stay distinct.
 
 Timestamps that arrive as literal `TBA`/`TBD` strings do not occur in the
 current snapshot but must not raise; they are treated the same as date-only.
@@ -265,8 +272,9 @@ Per this project's rule that only the running site confirms rendering:
   fixture. Covers: sport extraction across all title shapes, vs/at home/away,
   date-only vs timed detection (83/58 split in the fixture), fractional-second
   timestamps, multi-day collapsing within the 48-hour window (the 3-item golf
-  and hockey cases, and the non-merging of separate same-opponent series),
-  past-event filtering, and malformed input not raising.
+  and hockey cases, merging across an interleaved other-sport event, and the
+  non-merging of separate same-opponent series), past-event filtering, and
+  malformed input not raising.
 - `python3 -m json.tool about.json`, `ruby -ryaml -e "YAML.load_file(...)"` on
   locales, per the existing repo checks.
 
