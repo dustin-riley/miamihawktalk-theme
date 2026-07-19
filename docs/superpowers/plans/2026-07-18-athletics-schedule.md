@@ -1123,16 +1123,28 @@ function writeCache(events) {
   }
 }
 
+// MUST match DATE_ONLY_GRACE in the server-side parser. A date-only event's
+// start is midnight UTC on an Eastern calendar date, which is only 4-5 hours
+// before Eastern midnight of that same date — so a flat 24 hours here hides
+// an untimed game at 8pm Eastern on the day it is played, six hours before
+// the server stops serving it.
+const DATE_ONLY_GRACE_MS = 30 * 60 * 60 * 1000;
+
 // The stored feed can outlive individual events, so filter again on read.
-// Date-only events stay listed for their whole day.
 export function upcomingOnly(events, now = Date.now()) {
   return events.filter((event) => {
+    // The payload is third-party data reaching us through a cache; a null or
+    // non-object element must yield a shorter list, never a thrown exception
+    // that collapses the whole sidebar.
+    if (!event || typeof event !== "object") {
+      return false;
+    }
     const start = Date.parse(event.start_utc);
     if (isNaN(start)) {
       return false;
     }
     const end = Date.parse(event.end_utc) || start;
-    const cutoff = event.time_known ? start : end + 24 * 60 * 60 * 1000;
+    const cutoff = event.time_known ? start : end + DATE_ONLY_GRACE_MS;
     return cutoff >= now;
   });
 }
