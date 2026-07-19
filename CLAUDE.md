@@ -137,8 +137,9 @@ These caused real bugs in this theme. They are non-obvious and repeat often:
    light boxes in dark mode and wash out light text:
    - `$hover: #f2f2f2` → exposed as `--d-hover`, used by header icon buttons and
      notification/user-menu row hovers.
-   - `$selected: #d1f0ff` → same class of problem for selected states (not yet
-     hit; fix identically if it appears).
+   - `$selected: #d1f0ff` → exposed as `--d-selected`, used by autocomplete /
+     emoji-picker selected rows. Its text color (`--d-selected-text-color`) *is*
+     scheme-aware, so light text landed on a light-blue box. Fixed the same way.
    - `--secondary` is used as *primary-button text color*, so it goes dark in the
      dark scheme (dark text on a red button).
 

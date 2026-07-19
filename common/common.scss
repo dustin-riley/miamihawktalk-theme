@@ -92,13 +92,18 @@ a,
   color: var(--tertiary);
 }
 
-// Discourse's hover background is a hardcoded light gray ($hover: #f2f2f2,
-// exposed as --d-hover) and is NOT scheme-aware, so it renders as a light box in
-// dark mode and washes out light text/icons everywhere it's used (header icon
-// buttons, notification/user-menu rows, etc.). Repoint --d-hover at a
-// scheme-correct neutral to fix the whole family at once.
+// Discourse hardcodes its hover and selected backgrounds as light colors
+// ($hover: #f2f2f2 -> --d-hover, $selected: #d1f0ff -> --d-selected). They are
+// NOT scheme-aware, so in dark mode they render as light boxes while the text on
+// them stays light (--d-selected-text-color is var(--primary)) — washing out
+// header icon buttons, notification/user-menu rows, and autocomplete/emoji
+// pickers. Repoint them at scheme-correct neutrals to fix the whole family.
+// --d-selected is a step stronger than --d-hover so a keyboard-selected row is
+// still distinguishable from a merely hovered one.
 :root {
   --d-hover: var(--primary-low);
+  --d-selected: var(--primary-low-mid);
+  --d-selected-hover: var(--primary-low-mid);
 }
 
 // Primary buttons: force white text/icons. Discourse colors these with
