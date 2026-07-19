@@ -977,7 +977,9 @@ Visit `/admin/plugins`. Expected: `discourse-redhawks-schedule` listed and enabl
 
 ```bash
 cd /var/discourse && ./launcher enter app
-cd /var/www/discourse && RAILS_ENV=production bundle exec rails runner \
+# MUST run as the discourse user — Postgres uses peer authentication and
+# rejects root with "Peer authentication failed for user discourse".
+cd /var/www/discourse && sudo -E -u discourse bundle exec rails runner \
   'Jobs::FetchRedhawksSchedule.new.execute({}); \
    d = PluginStore.get("discourse-redhawks-schedule", "events"); \
    puts "generated_at=#{d["generated_at"]}"; \
