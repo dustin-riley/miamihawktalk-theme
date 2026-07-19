@@ -212,14 +212,22 @@ A Glimmer component rendered into a sidebar plugin outlet.
 
 Target Discourse version: **2026.7.0-latest** (self-hosted).
 
-**Open item for the first implementation step:** Discourse's `addSidebarSection`
-API is organised around link rows and will not produce the two-line, logo-
-bearing layout below. The rich layout needs a plugin outlet
-(`below-sidebar-sections` or equivalent), whose exact name must be confirmed
-against the running Discourse version before building. If no suitable outlet
-exists on that version, the fallback is the text-only single-line layout via the
-standard section API — that is a visible change to an approved design and
-requires checking back before proceeding.
+**Resolved 2026-07-19** against Discourse source. The concern was real:
+`addSidebarSection` is organised around link rows — one line of text per link
+plus a prefix and suffix — and cannot produce the two-line, logo-bearing layout
+below.
+
+It does not block the design, because `after-sidebar-sections` is an ordinary
+plugin outlet in `frontend/discourse/app/components/sidebar.gjs` and accepts an
+arbitrary Glimmer component through `api.renderInOutlet`. It sits inside
+`<nav id="d-sidebar">`, below the navigation sections and above the
+switch-panel buttons and footer. The approved row design stands; no fallback to
+a text-only layout is needed.
+
+Note the outlet is **not** `below-sidebar-sections`, which this document
+originally guessed at and which does not exist anywhere in Discourse. Full
+findings, including the frontend tree's move to `frontend/discourse/app/`, are
+in `NOTES-api-verification.md` in the plugin repo.
 
 ### Row
 

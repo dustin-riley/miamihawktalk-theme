@@ -1376,8 +1376,11 @@ export default apiInitializer((api) => {
     return;
   }
 
-  // Outlet name confirmed in Task 1 — substitute the verified value.
-  api.renderInOutlet("below-sidebar-sections", UpcomingGames);
+  // Verified against Discourse source 2026-07-19: this outlet lives in
+  // frontend/discourse/app/components/sidebar.gjs, inside <nav id="d-sidebar">,
+  // below the nav sections and above the switch-panel buttons and footer.
+  // `below-sidebar-sections` (this plan's original guess) does not exist.
+  api.renderInOutlet("after-sidebar-sections", UpcomingGames);
 });
 ```
 
