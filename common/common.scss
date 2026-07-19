@@ -100,14 +100,27 @@ a,
   --d-header-icon-background--hover: var(--primary-low);
 }
 
+// Primary buttons: force white text/icons. Discourse colors these with
+// --secondary, which is near-white in the light scheme but dark in the dark
+// scheme (dark text on the red button). White reads well on both accent reds.
 .btn-primary {
   background: $tertiary;
   border-color: $tertiary;
+  color: #fff;
+
+  .d-icon {
+    color: #fff;
+  }
 
   &:hover,
   &:focus {
     background: darken($tertiary, 6%);
     border-color: darken($tertiary, 6%);
+    color: #fff;
+
+    .d-icon {
+      color: #fff;
+    }
   }
 }
 
