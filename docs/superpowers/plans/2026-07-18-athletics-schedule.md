@@ -400,7 +400,13 @@ module RedhawksSchedule
     TEAM_PREFIX = /\AMiami University\s+/i
     SEPARATOR = /\s+(vs|at)\s+/i
 
-    DAY_SECONDS = 86_400
+    # A date-only event has no time of day, and the feed publishes Eastern
+    # calendar dates. Midnight UTC on such a date is 8pm Eastern the PREVIOUS
+    # day, so a plain 24-hour window drops the game at 8pm Eastern on the day
+    # it is actually played. 30 hours covers the full Eastern day in both EDT
+    # and EST, lingering at most ~2 hours past midnight Eastern — much better
+    # than hiding a game that has not been played yet.
+    DATE_ONLY_GRACE = 30 * 60 * 60
     COLLAPSE_WINDOW = 48 * 60 * 60
 
     def self.parse(xml, now: Time.now.utc)
@@ -457,12 +463,9 @@ module RedhawksSchedule
       [match.pre_match.strip, match[1].casecmp?("at") ? "away" : "home", match.post_match.strip]
     end
 
-    # A date-only event has no time of day, so it stays listed for its whole
-    # day. Anchoring it to midnight UTC and filtering on that would drop
-    # tonight's TBA game at 8pm the previous evening, Eastern.
     def upcoming(events)
       events.reject do |event|
-        cutoff = event[:time_known] ? event[:start_utc] : event[:start_utc] + DAY_SECONDS
+        cutoff = event[:time_known] ? event[:start_utc] : event[:start_utc] + DATE_ONLY_GRACE
         cutoff < @now
       end
     end
@@ -571,7 +574,7 @@ Append to `spec/lib/parser_spec.rb`, inside the top-level `describe`:
       expect(events.map { |e| e[:opponent] }).to eq(["Denver"])
     end
 
-    it "keeps a date-only event for the whole of its day" do
+    it "keeps a date-only event through the end of its day, Eastern" do
       xml = wrap(<<~XML)
         <item>
           <title>8/29 Miami University Football vs Ohio</title>
@@ -580,10 +583,15 @@ Append to `spec/lib/parser_spec.rb`, inside the top-level `describe`:
         </item>
       XML
 
-      # 8pm Eastern on the day of the game is 2026-08-30T00:00Z — past the
-      # midnight-UTC anchor, but the game is still today.
-      expect(described_class.parse(xml, now: Time.utc(2026, 8, 30, 0, 0))).not_to be_empty
-      expect(described_class.parse(xml, now: Time.utc(2026, 8, 30, 1, 0))).to be_empty
+      # The feed's "2026-08-29" is an Eastern calendar date, but it parses to
+      # midnight UTC — which is 8pm Eastern on Aug 28. A plain 24-hour window
+      # would therefore hide this game at 8pm Eastern on Aug 29, while it may
+      # still be being played.
+      #
+      # 11pm Eastern on game day — must still be listed:
+      expect(described_class.parse(xml, now: Time.utc(2026, 8, 30, 3, 0))).not_to be_empty
+      # 3am Eastern the next morning — the day is over:
+      expect(described_class.parse(xml, now: Time.utc(2026, 8, 30, 7, 0))).to be_empty
     end
   end
 
